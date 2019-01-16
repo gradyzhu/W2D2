@@ -1,6 +1,8 @@
 require "byebug"
+require_relative "display"
+require_relative "piece"
 
-class Board 
+class Board
     attr_reader :grid
     def initialize
         @grid = Array.new(8){[]}
@@ -9,25 +11,29 @@ class Board
     
     def populate_grid
         @grid.each_with_index do |row, i|
-            if i == 0 || i == 7
-                Board.populate_nonpawn(row, i)
-            elsif i == 1 || i == 6
-                8.times{ |y| row << Piece.new("Pawn", [i, y])}
+            if i == 0
+                populate_nonpawn(row, i, :white)
+            elsif i == 7
+                populate_nonpawn(row, i, :black)
+            elsif i == 1
+                8.times{ |y| row << Pawn.new([i, y], self, :white)}
+            elsif i == 6
+                8.times{ |y| row << Pawn.new([i, y], self, :black)}
             else
-                8.times{row << nil}
+                8.times{row << NullPiece.instance}
             end
         end
     end
 
-    def self.populate_nonpawn(arr, x)
-        arr << Piece.new("Rook", [x, 0])
-        arr << Piece.new("Knight", [x, 1])
-        arr << Piece.new("Bishop", [x, 2])
-        arr << Piece.new("Queen", [x, 3])
-        arr << Piece.new("King", [x, 4])
-        arr << Piece.new("Bishop", [x, 5])
-        arr << Piece.new("Knight", [x, 6])
-        arr << Piece.new("Rook", [x, 7])
+    def populate_nonpawn(arr, x, col)
+        arr << Rook.new([x, 0], self, col)
+        arr << Knight.new([x, 1], self, col)
+        arr << Bishop.new([x, 2], self, col)
+        arr << Queen.new([x, 3], self, col)
+        arr << King.new([x, 4], self, col)
+        arr << Bishop.new([x, 5], self, col)
+        arr << Knight.new([x, 6], self, col)
+        arr << Rook.new([x, 7], self, col)
     end
 
     def []=(pos, value)
@@ -51,32 +57,9 @@ class Board
         self[start_pos] = nil
         self[end_pos].pos = end_pos
     end
-    
+
     private 
     attr_writer :grid
 end
 
-class Piece
-    NAMES = {"Queen" => "Q", "King" => "K", "Rook" => "R", "Bishop" => "B", "Pawn" => "P", "Knight" => "N"}
-
-    attr_reader :name
-    attr_accessor :pos
-
-    def initialize(name, pos)
-        @name = name
-        @pos = pos
-    end
-
-    def single_letter
-        NAMES[name]
-    end
-
-    def update_position(pos)
-        @pos = pos
-    end
-
-end
-
-class NullPiece < Piece
-end
 

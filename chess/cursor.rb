@@ -23,6 +23,7 @@ KEYMAP = {
   "\u0003" => :ctrl_c,
 }
 
+#constant hash establishes what the symbols mean in context of board.
 MOVES = {
   left: [0, -1],
   right: [0, 1],
@@ -32,19 +33,25 @@ MOVES = {
 
 class Cursor
 
-  attr_reader :cursor_pos, :board
+  attr_reader :cursor_pos, :board, :selected
 
   def initialize(cursor_pos, board)
     @cursor_pos = cursor_pos
     @board = board
+    @selected = false
   end
 
+  #we create a key variable to extract from the keymap
+  #we use our handle_key method to decide what to do what to do with the key
   def get_input
     key = KEYMAP[read_char]
     handle_key(key)
   end
 
   private
+
+  #stuff that we don't really need to know but gets a character from
+  #the keyboard.
 
   def read_char
     STDIN.echo = false # stops the console from printing return values
@@ -75,10 +82,12 @@ class Cursor
     return input
   end
 
+  #handler tells board to do things based on what key was pressed.
   def handle_key(key)
     case key 
     when :space, :return
-      return cursor_pos
+      @selected = !@selected
+      return cursor_pos if @selected
     when :left
       update_pos(MOVES[:left])
       return nil
@@ -97,6 +106,13 @@ class Cursor
   end
 
   def update_pos(diff)
-    @cursor_pos.each_index{|i| @cursor_pos[i] += diff[i]}
+    @cursor_pos.each_index do |i|
+      @cursor_pos[i] += diff[i]
+      if @cursor_pos[i] < 0
+        @cursor_pos[i] = 0
+      elsif @cursor_pos[i] > 7
+        @cursor_pos[i] = 7
+      end
+    end
   end
 end
